@@ -213,3 +213,12 @@ button:hover {
 #play:hover, #end:hover {
   background-color: #ddd;
 }
+
+#timer {
+  position: absolute;
+  font-size: 80px;
+  font-weight: bold;
+  color: #ff6666;
+  bottom: 15px;
+  right: 15px;
+}

@@ -4,6 +4,8 @@ const app = express();
 const path = require('path');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+const Algorithmia = require("algorithmia");
+
 const port = process.env.PORT || 3000;
 
 const prompts = [
@@ -47,7 +49,7 @@ let users = [];
 let isDone = true;
 let selectedPrompt = '';
 let response = '';
-let currentUser = 0;
+let currentUser = undefined;
 
 io.on('connection', (socket) => {
   let addedUser = false;
@@ -66,6 +68,51 @@ io.on('connection', (socket) => {
       currentUser,
     });
   }
+
+  const endGame = () => {
+    numUsers = 0;
+    users = [];
+    isDone = true;
+    selectedPrompt = '';
+    response = '';
+    currentUser = undefined;
+    console.log('game ended - all users left');
+  }
+
+  socket.on('out of time', () => {
+    io.emit('AI word start', {
+      username: socket.username
+    });
+    if (!response.length) {
+      var word = 'You';
+      response = word;
+      var userIndex = users.indexOf(socket.username);
+      currentUser = users[numUsers === 0 ? 0 : (userIndex + 1) % numUsers];
+      io.emit('add word', {
+        username: '[AI BOT]',
+        message: word,
+        nextUser: currentUser,
+      });
+    } else {
+      const fallback = 'uh';
+      Algorithmia.client("sim5/+euZlm4p8fzBCnZcbEc9vh1")
+        .algo("PetiteProgrammer/AutoComplete/0.1.2?timeout=300") // timeout is optional
+        .pipe({ sentence: response })
+        .then(aiResults => {
+          console.log('aiResults', aiResults);
+          var output = aiResults.get();
+          var word = (output && output.length) ? output[Math.floor(Math.random() * output.length)].word : fallback;
+          response += response.length ? ` ${word}` : word;
+          var userIndex = users.indexOf(socket.username);
+          currentUser = users[numUsers === 0 ? 0 : (userIndex + 1) % numUsers];
+          io.emit('add word', {
+            username: '[AI BOT]',
+            message: word,
+            nextUser: currentUser,
+          });
+        });
+    }
+  });
 
   // when the client emits 'add word', this listens and executes
   socket.on('add word', (word) => {
@@ -95,6 +142,9 @@ io.on('connection', (socket) => {
   // when the client emits 'add user', this listens and executes
   socket.on('add user', (username) => {
     if (addedUser) return;
+    if (users.indexOf(username) !== -1) {
+      username = username + ' (1)';
+    }
 
     ++numUsers;
     // we store the username in the socket session for this client
@@ -138,7 +188,11 @@ io.on('connection', (socket) => {
       var userIndex = users.indexOf(socket.username);
       users = users.filter(user => user !== socket.username);
       --numUsers;
-      currentUser = users[numUsers === 0 ? 0 : (userIndex + 1) % numUsers];
+      if (numUsers === 0) {
+        // end game
+        return endGame();
+      }
+      currentUser = users[(userIndex + 1) % numUsers];
 
       // echo globally that this client has left
       socket.broadcast.emit('user left', {

@@ -3,6 +3,13 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Wordplay Game" />
+  <meta property="og:description" content="Work in progress game for having fun making up sentences" />
+  <meta property="og:url" content="https://idol-software-wordplay.herokuapp.com" />
+  <meta property="og:site_name" content="Wordplay" />
   <title>Wordplay</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -15,11 +22,12 @@
         <div class="responseArea">
           <span class="messageData" style="margin-right: 10px"></span>
           <div class="inputMessage">
-            <input placeholder="Type the next word" autocomplete="off" />
+            <input placeholder="Type the next word" type="text" autocorrect="off" autocapitalize="none" autocomplete="off" />
             <button id="end">(End)</button>
           </div>
         </div>
         <button id="play">New prompt</button>
+        <div id="timer"></div>
       </div>
       <div class="chatArea">
         <ul class="messages"></ul>

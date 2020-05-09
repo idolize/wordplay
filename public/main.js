@@ -1,4 +1,5 @@
 $(function () {
+  var TURN_TIME_S = 5;
   var FADE_TIME = 150; // ms
   var TYPING_TIMER_LENGTH = 400; // ms
   var COLORS = [
@@ -19,6 +20,7 @@ $(function () {
   var $chatPage = $('.chat.page'); // The chatroom page
 
   var $playBtn = $('#play');
+  var $timer = $('#timer');
 
   // Prompt for setting a username
   var username;
@@ -29,6 +31,9 @@ $(function () {
   var currentUser;
   var isDone = true;
   var numUsers = 0;
+
+  var turnTimer;
+  var turnTime = TURN_TIME_S;
 
   var socket = io();
 
@@ -98,7 +103,8 @@ $(function () {
       .text(data.username)
       .css('color', getUsernameColor(data.username));
     var $messageBodyDiv = $('<span class="messageBody">')
-      .text(data.typing ? 'is typing...' :
+      .text(data.outOfTime ? 'ran out of time' :
+        data.typing ? 'is typing...' :
         data.message ? `wrote '${data.message}'` :
         `ended the response! The final asnwer is '${data.response}'`);
 
@@ -204,6 +210,37 @@ $(function () {
     return COLORS[index];
   }
 
+  const enableTurnTimer = (yourTurn) => {
+    clearTimeout(turnTimer);
+    turnTime = TURN_TIME_S;
+
+    const tick = () => {
+      turnTimer = setTimeout(() => {
+        turnTime--;
+        console.log(`${turnTime}s left...`);
+        $timer.text(`${turnTime}s`);
+        if (turnTime === 0) {
+          console.log('Ran out of time');
+          socket.emit('out of time');
+          $timer.text('Out of time!');
+          $inputMessage.prop('disabled', true);
+          $inputEnd.prop('disabled', true);
+        } else {
+          console.log(`${turnTime}s left...`);
+          tick();
+        }
+      }, 1000); // 5 sec
+    };
+
+    if (yourTurn) {
+      $timer.text(`${turnTime}s`);
+      $timer.show();
+      tick();
+    } else {
+      $timer.hide();
+    }
+  }
+
   // Keyboard events
 
   $window.keydown(event => {
@@ -284,6 +321,7 @@ $(function () {
     $message.text(data.response);
     $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
     $inputMessage.prop("disabled", !yourTurn);
+    enableTurnTimer(yourTurn);
 
     connected = true;
     // Display the welcome message
@@ -292,6 +330,11 @@ $(function () {
       prepend: true
     });
     addParticipantsMessage(data);
+  });
+
+  socket.on('AI word start', (data) => {
+    addChatMessage({ ...data, outOfTime: true });
+    $inputMessage.prop('placeholder', 'AI BOT generating word...');
   });
 
   socket.on('add word', (data) => {
@@ -307,6 +350,7 @@ $(function () {
     }
     $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
     $inputMessage.prop("disabled", !yourTurn);
+    enableTurnTimer(yourTurn);
   });
 
   socket.on('end response', (data) => {
@@ -340,6 +384,7 @@ $(function () {
       }
       $inputMessage.prop("disabled", !yourTurn);
       $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
+      enableTurnTimer(yourTurn);
     }
   });
 
@@ -361,6 +406,7 @@ $(function () {
     }
     $inputMessage.prop("disabled", !yourTurn);
     $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
+    enableTurnTimer(yourTurn);
   });
 
   // Whenever the server emits 'typing', show the typing message
