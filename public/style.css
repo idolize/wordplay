@@ -128,6 +128,7 @@ ul {
 .messageArea {
   position: relative;
   padding: 35px;
+  flex-basis: 60%;
   /* flex-grow: 1;
   display: flex;
   flex-wrap: wrap; */
