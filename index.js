@@ -8,6 +8,8 @@ const Algorithmia = require("algorithmia");
 
 const port = process.env.PORT || 3000;
 
+console.log('hello');
+
 const prompts = [
   'What is the meaning of life?',
   'Where do babies come from?',
