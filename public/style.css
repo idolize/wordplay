@@ -187,10 +187,9 @@ ul {
 
 
 .prompt {
-  position: absolute;
   font-size: 30px;
-  top: 30%;
   font-style: italic;
+  margin-bottom: 30px;
   text-align: center;
 }
 
@@ -199,7 +198,7 @@ ul {
   margin-top: 40px;
 }
 
-#play, #end {
+#play, #end, #send {
   font-size: 25px;
   border: 1px solid #333;
   /* bottom: 0; */
@@ -210,15 +209,15 @@ button:hover {
   cursor: pointer;
 }
 
-#play:hover, #end:hover {
+#send:hover, #play:hover, #end:hover {
   background-color: #ddd;
 }
 
 #timer {
   position: absolute;
-  font-size: 80px;
+  font-size: 70px;
   font-weight: bold;
   color: #ff6666;
-  bottom: 15px;
+  top: 15px;
   right: 15px;
 }

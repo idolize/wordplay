@@ -1,5 +1,5 @@
 $(function () {
-  var TURN_TIME_S = 5;
+  var TURN_TIME_S = 10;
   var FADE_TIME = 150; // ms
   var TYPING_TIMER_LENGTH = 400; // ms
   var COLORS = [
@@ -14,6 +14,7 @@ $(function () {
   var $usernameInput = $('.usernameInput'); // Input for username
   var $messages = $('.messages'); // Messages area
   var $inputMessage = $('.inputMessage input'); // Input message input box
+  var $inputSend = $('#send');
   var $inputEnd = $('#end'); // Input message input box
 
   var $loginPage = $('.login.page'); // The login page
@@ -66,6 +67,8 @@ $(function () {
 
   // Sends a chat message
   const sendMessage = () => {
+    socket.emit('stop typing');
+    typing = false;
     if ($inputMessage.prop('disabled')) return;
     var message = $inputMessage.val();
     // Prevent markup from being injected into the message
@@ -224,6 +227,7 @@ $(function () {
           socket.emit('out of time');
           $timer.text('Out of time!');
           $inputMessage.prop('disabled', true);
+          $inputSend.prop('disabled', true);
           $inputEnd.prop('disabled', true);
         } else {
           console.log(`${turnTime}s left...`);
@@ -252,8 +256,6 @@ $(function () {
     if (event.which === 13) {
       if (username) {
         sendMessage();
-        socket.emit('stop typing');
-        typing = false;
       } else {
         setUsername();
       }
@@ -271,6 +273,9 @@ $(function () {
   });
 
   // Click events
+  $inputSend.click(() => {
+    sendMessage();
+  });
 
   // Focus input when clicking anywhere on login page
   $loginPage.click(() => {
@@ -295,6 +300,7 @@ $(function () {
     if (confirm('Are you sure you want to end the response as-is?')) {
       socket.emit('end response');
       $inputMessage.hide();
+      $inputSend.hide();
       $inputEnd.hide();
     }
   });
@@ -307,6 +313,7 @@ $(function () {
     if (isDone) {
       $playBtn.show();
       $inputMessage.hide();
+      $inputSend.hide();
       $inputEnd.hide();
     }
     $('.prompt').text(data.selectedPrompt);
@@ -319,6 +326,7 @@ $(function () {
       $inputMessage.prop('placeholder', `${currentUser}'s turn`);
     }
     $message.text(data.response);
+    $inputSend.prop('disabled', !yourTurn);
     $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
     $inputMessage.prop("disabled", !yourTurn);
     enableTurnTimer(yourTurn);
@@ -348,6 +356,7 @@ $(function () {
     } else if (currentUser) {
       $inputMessage.prop('placeholder', `${currentUser}'s turn`);
     }
+    $inputSend.prop('disabled', !yourTurn);
     $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
     $inputMessage.prop("disabled", !yourTurn);
     enableTurnTimer(yourTurn);
@@ -358,8 +367,10 @@ $(function () {
     isDone = true;
     currentUser = undefined;
     $inputMessage.hide();
+    $inputSend.hide();
     $inputEnd.hide();
     $playBtn.show();
+    enableTurnTimer(false);
   });
 
   // Whenever the server emits 'user joined', log it in the chat body
@@ -391,6 +402,7 @@ $(function () {
   socket.on('game started', (data) => {
     $playBtn.hide();
     $inputMessage.show();
+    $inputSend.show();
     $inputEnd.show();
     console.log('game started', data);
     $('.prompt').text(data.selectedPrompt);
@@ -405,6 +417,7 @@ $(function () {
       $inputMessage.prop('placeholder', `${currentUser}'s turn`);
     }
     $inputMessage.prop("disabled", !yourTurn);
+    $inputSend.prop('disabled', !yourTurn);
     $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
     enableTurnTimer(yourTurn);
   });
