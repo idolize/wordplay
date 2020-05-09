@@ -273,6 +273,13 @@ $(function () {
   });
 
   // Click events
+  $('#usernameDone').click(() => {
+    var e = jQuery.Event('keydown');
+    e.which = 13; //choose the one you want
+    e.keyCode = 13;
+    $window.trigger(e);
+  })
+
   $inputSend.click(() => {
     sendMessage();
   });
@@ -384,7 +391,7 @@ $(function () {
     log(data.username + ' left');
     addParticipantsMessage(data);
     removeChatTyping(data);
-    if (data.currentUser !== currentUser) {
+    if (!isDone && data.currentUser !== currentUser) {
       currentUser = data.currentUser;
       var yourTurn = currentUser === username;
       if (yourTurn) {

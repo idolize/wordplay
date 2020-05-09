@@ -81,6 +81,12 @@ ul {
   letter-spacing: 3px;
 }
 
+.login.page button {
+  background-color: #000;
+  color: white;
+  border: 1px solid white;
+}
+
 .login.page .title, .login.page .usernameInput {
   color: #fff;
   font-weight: 100;
@@ -90,6 +96,12 @@ ul {
 
 .chat.page {
   display: none;
+}
+
+@media only screen and (max-width: 700px) {
+  .chat.page {
+    flex-direction: column;
+  }
 }
 
 /* Font */
@@ -132,8 +144,10 @@ ul {
 
 .chatArea {
   height: 100%;
-  width: 40%;
+  flex-basis: 40%;
   border-left: 1px solid gray;
+  border-top: 1px solid gray;
+  border-right: 1px solid gray;
   padding-bottom: 60px;
 }
 
@@ -157,6 +171,7 @@ ul {
 
 .messageData {
   font-size: 25px;
+  margin-bottom: 15px;
 }
 
 /* Input */
@@ -198,7 +213,7 @@ ul {
   margin-top: 40px;
 }
 
-#play, #end, #send {
+button {
   font-size: 25px;
   border: 1px solid #333;
   /* bottom: 0; */
@@ -207,9 +222,6 @@ ul {
 
 button:hover {
   cursor: pointer;
-}
-
-#send:hover, #play:hover, #end:hover {
   background-color: #ddd;
 }
 

@@ -96,9 +96,12 @@ io.on('connection', (socket) => {
     } else {
       const fallback = 'uh';
       Algorithmia.client("sim5/+euZlm4p8fzBCnZcbEc9vh1")
-        .algo("PetiteProgrammer/AutoComplete/0.1.2?timeout=300") // timeout is optional
+        .algo("PetiteProgrammer/AutoComplete/0.1.2?timeout=20") // timeout is optional
         .pipe({ sentence: response })
         .then(aiResults => {
+          if (isDone) {
+            return;
+          }
           console.log('aiResults', aiResults);
           var output = aiResults.get();
           var word = (output && output.length) ? output[Math.floor(Math.random() * output.length)].word : fallback;
