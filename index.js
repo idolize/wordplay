@@ -53,6 +53,23 @@ let selectedPrompt = '';
 let response = '';
 let currentUser = undefined;
 
+function getConnectedSockets() {
+  return Object.values(io.of("/").connected);
+}
+
+const endGame = () => {
+  numUsers = 0;
+  users = [];
+  isDone = true;
+  selectedPrompt = '';
+  response = '';
+  currentUser = undefined;
+  getConnectedSockets().forEach(function (s) {
+    s.disconnect(true);
+  });
+  console.log('game ended - all users left');
+}
+
 io.on('connection', (socket) => {
   let addedUser = false;
 
@@ -69,16 +86,6 @@ io.on('connection', (socket) => {
       selectedPrompt,
       currentUser,
     });
-  }
-
-  const endGame = () => {
-    numUsers = 0;
-    users = [];
-    isDone = true;
-    selectedPrompt = '';
-    response = '';
-    currentUser = undefined;
-    console.log('game ended - all users left');
   }
 
   socket.on('out of time', () => {
@@ -207,4 +214,9 @@ io.on('connection', (socket) => {
       });
     }
   });
+});
+
+app.get('/endgame', (req, res) => {
+  endGame();
+  res.send('Game ended');
 });
