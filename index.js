@@ -121,6 +121,7 @@ io.on('connection', (socket) => {
 
   // when the client emits 'add word', this listens and executes
   socket.on('add word', (word) => {
+    if (currentUser !== socket.username) return;
     word = word.replace(/\s/g, '');
     response += response.length ? ` ${word}` : word;
     var userIndex = users.indexOf(socket.username);
@@ -133,6 +134,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('end response', () => {
+    if (currentUser !== socket.username) return;
     isDone = true;
     io.emit('end response', {
       username: socket.username,
@@ -141,6 +143,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('new prompt', () => {
+    if (!isDone) return;
     startGame();
   });
 
