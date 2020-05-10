@@ -336,6 +336,7 @@ $(function () {
     $inputSend.prop('disabled', !yourTurn);
     $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
     $inputMessage.prop("disabled", !yourTurn);
+    $inputMessage.val('');
     enableTurnTimer(yourTurn);
 
     connected = true;
@@ -363,6 +364,7 @@ $(function () {
     } else if (currentUser) {
       $inputMessage.prop('placeholder', `${currentUser}'s turn`);
     }
+    $inputMessage.val('');
     $inputSend.prop('disabled', !yourTurn);
     $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
     $inputMessage.prop("disabled", !yourTurn);
@@ -392,6 +394,7 @@ $(function () {
     addParticipantsMessage(data);
     removeChatTyping(data);
     if (!isDone && data.currentUser !== currentUser) {
+      $inputMessage.val('');
       currentUser = data.currentUser;
       var yourTurn = currentUser === username;
       if (yourTurn) {
@@ -416,6 +419,7 @@ $(function () {
     currentUser = data.currentUser;
     $message.text('');
     isDone = false;
+    $inputMessage.val('');
     var yourTurn = currentUser === username;
     if (yourTurn) {
       $inputMessage.prop('placeholder', 'Type the next word');
