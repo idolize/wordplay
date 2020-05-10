@@ -197,6 +197,7 @@ io.on('connection', (socket) => {
   // when the user disconnects.. perform this
   socket.on('disconnect', () => {
     if (addedUser) {
+      addedUser = false;
       var userIndex = users.indexOf(socket.username);
       users = users.filter(user => user !== socket.username);
       --numUsers;
