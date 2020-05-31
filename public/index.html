@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta property="og:locale" content="en_US" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Wordplay Game" />
@@ -12,6 +12,8 @@
   <meta property="og:site_name" content="Wordplay" />
   <title>Wordplay</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 </head>
 
 <body>
@@ -22,17 +24,42 @@
         <div class="responseArea">
           <span class="messageData" style="margin-right: 10px"></span>
           <div class="inputMessage">
-            <input placeholder="Type the next word" type="text" autocorrect="off" autocapitalize="none" autocomplete="off" />
-            <button id="send">Send</button>
-            <button id="end">Complete</button>
+            <input placeholder="Type the next word" class="form-control" type="text" autocorrect="off" autocapitalize="none" autocomplete="off" />
+            <button type="button" class="btn btn-primary" id="send">Send Word</button>
+            <button type="button" class="btn btn-secondary" id="end">Complete Response</button>
+            <button type="button" class="btn btn-dark" style="display: none" id="bankBtn" data-toggle="modal" data-target="#exampleModal">See Wordbank</button>
           </div>
         </div>
-        <button id="play">New prompt</button>
+        <button id="play" type="button" class="btn btn-primary btn-lg" style="font-size: 25px">New prompt</button>
         <div id="timer"></div>
       </div>
       <div class="chatArea">
         <ul class="messages"></ul>
       </div>
+      <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Wordbank</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="wordbank-submit">
+                <input autofocus placeholder="Suggest the next word" class="form-control" type="text" autocorrect="off" autocapitalize="none" autocomplete="off" />
+                <button type="button" class="btn btn-primary" id="suggestBtn">Suggest</button>
+              </div>
+              <div id="wordbank-words"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="toasts" style="position: absolute; right: 0; bottom: 0;"></div>
     </li>
     <li class="login page">
       <div class="form">
@@ -43,7 +70,11 @@
     </li>
   </ul>
 
-  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+    integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/main.js"></script>
 </body>

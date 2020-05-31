@@ -82,6 +82,11 @@ ul {
   letter-spacing: 3px;
 }
 
+#usernameDone {
+  font-size: 25px;
+  height: 60px;
+}
+
 .login.page button {
   background-color: #000;
   color: white;
@@ -215,16 +220,23 @@ ul {
   margin-top: 40px;
 }
 
-button {
-  font-size: 25px;
-  border: 1px solid #333;
-  /* bottom: 0; */
-  height: 60px;
+.wordbank-submit {
+  display: flex;
+  margin-bottom: 20px;
 }
 
-button:hover {
-  cursor: pointer;
-  background-color: #ddd;
+.wordbank-submit > * {
+  font-size: 1.5rem;
+}
+
+.wordbank-submit input {
+  flex-grow: 1;
+}
+
+#wordbank-words > * {
+  font-size: 120%;
+  margin-right: 5px;
+  margin-bottom: 5px;
 }
 
 #timer {

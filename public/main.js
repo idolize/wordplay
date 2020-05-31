@@ -1,5 +1,5 @@
 $(function () {
-  var TURN_TIME_S = 10;
+  var TURN_TIME_S = 30;
   var FADE_TIME = 150; // ms
   var TYPING_TIMER_LENGTH = 400; // ms
   var COLORS = [
@@ -22,6 +22,15 @@ $(function () {
 
   var $playBtn = $('#play');
   var $timer = $('#timer');
+
+  var $toasts = $('#toasts');
+
+  var $wordbank = $('#wordbank-words');
+  var $wordbankModal = $('#exampleModal');
+  var $wordbankBtn = $('#bankBtn');
+  var $suggestBtn = $('#suggestBtn');
+  var $wordbankSuggestionArea = $('.wordbank-submit');
+  var $wordbankSuggestion = $('.wordbank-submit input');
 
   // Prompt for setting a username
   var username;
@@ -154,7 +163,7 @@ $(function () {
       options.fade = true;
     }
     if (typeof options.prepend === 'undefined') {
-      options.prepend = false;
+      options.prepend = true;
     }
 
     // Apply options
@@ -166,12 +175,38 @@ $(function () {
     } else {
       $messages.append($el);
     }
-    $messages[0].scrollTop = $messages[0].scrollHeight;
+    $messages[0].scrollTop = options.prepend ? 0 : $messages[0].scrollHeight;
+  }
+
+  const addToastElement = (title, message, delay = 2000) => {
+    $(`<div class="toast" data-delay="${delay}">
+        <div class="toast-header">
+          <strong class="mr-auto">${title}</strong>
+          <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="toast-body">
+          ${message}
+        </div>
+      </div>
+    `)
+    .appendTo($toasts)
   }
 
   // Prevents input from having injected markup
   const cleanInput = (input) => {
     return $('<div/>').text(input).html();
+  }
+
+  const constructWordbank = (wordbank) => {
+    $wordbank.empty();
+    wordbank.forEach(word => {
+      $('<span class="badge badge-secondary">').text(word).appendTo($wordbank);
+    });
+    if (wordbank.length === 0) {
+      $('<span class="text-muted">').text('No suggestions yet').appendTo($wordbank);
+    }
   }
 
   // Updates the typing event
@@ -272,6 +307,22 @@ $(function () {
     }
   });
 
+  $suggestBtn.click(() => {
+    const suggestion = $wordbankSuggestion.val().trim();
+    if (suggestion) {
+      $wordbankSuggestion.val('');
+      socket.emit('add suggestion', suggestion);
+    }
+  });
+
+  $wordbankSuggestion.keydown((e) => {
+    if (e.keyCode === 32) {
+      return false;
+    } else if (e.which === 13) {
+      $suggestBtn.click();
+    }
+  });
+
   // Click events
   $('#usernameDone').click(() => {
     var e = jQuery.Event('keydown');
@@ -329,10 +380,13 @@ $(function () {
     if (yourTurn) {
       $inputMessage.prop('placeholder', 'Type the next word');
       $inputMessage.focus();
+      $wordbankSuggestionArea.hide();
     } else if (!isDone && currentUser) {
       $inputMessage.prop('placeholder', `${currentUser}'s turn`);
+      $wordbankSuggestionArea.show();
     }
     $message.text(data.response);
+    constructWordbank(data.wordbank);
     $inputSend.prop('disabled', !yourTurn);
     $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
     $inputMessage.prop("disabled", !yourTurn);
@@ -341,9 +395,9 @@ $(function () {
 
     connected = true;
     // Display the welcome message
-    var message = "Welcome to Wordplay – ";
+    var message = "welcome to Wordplay";
     log(message, {
-      prepend: true
+      prepend: false
     });
     addParticipantsMessage(data);
   });
@@ -354,6 +408,7 @@ $(function () {
   });
 
   socket.on('add word', (data) => {
+    $wordbankModal.modal('hide');
     addChatMessage(data);
     addWord(data.message);
     currentUser = data.nextUser;
@@ -361,8 +416,10 @@ $(function () {
     if (yourTurn) {
       $inputMessage.prop('placeholder', 'Type the next word');
       $inputMessage.focus();
+      $wordbankSuggestionArea.hide();
     } else if (currentUser) {
       $inputMessage.prop('placeholder', `${currentUser}'s turn`);
+      $wordbankSuggestionArea.show();
     }
     $inputMessage.val('');
     $inputSend.prop('disabled', !yourTurn);
@@ -371,7 +428,13 @@ $(function () {
     enableTurnTimer(yourTurn);
   });
 
+  socket.on('add suggestion', (data) => {
+    constructWordbank(data.wordbank);
+    addToastElement('Word suggestion', data.word);
+  });
+
   socket.on('end response', (data) => {
+    $wordbankModal.modal('hide');
     addChatMessage(data);
     isDone = true;
     currentUser = undefined;
@@ -379,6 +442,7 @@ $(function () {
     $inputSend.hide();
     $inputEnd.hide();
     $playBtn.show();
+    $wordbankSuggestionArea.hide();
     enableTurnTimer(false);
   });
 
@@ -398,10 +462,13 @@ $(function () {
       currentUser = data.currentUser;
       var yourTurn = currentUser === username;
       if (yourTurn) {
+        $wordbankModal.modal('hide');
         $inputMessage.prop('placeholder', 'Type the next word');
         $inputMessage.focus();
+        $wordbankSuggestionArea.hide();
       } else if (currentUser) {
         $inputMessage.prop('placeholder', `${currentUser}'s turn`);
+        $wordbankSuggestionArea.show();
       }
       $inputMessage.prop("disabled", !yourTurn);
       $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
@@ -410,6 +477,8 @@ $(function () {
   });
 
   socket.on('game started', (data) => {
+    $wordbankBtn.show();
+    $wordbankModal.modal('hide');
     $playBtn.hide();
     $inputMessage.show();
     $inputSend.show();
@@ -424,8 +493,10 @@ $(function () {
     if (yourTurn) {
       $inputMessage.prop('placeholder', 'Type the next word');
       $inputMessage.focus();
+      $wordbankSuggestionArea.hide();
     } else if (currentUser) {
       $inputMessage.prop('placeholder', `${currentUser}'s turn`);
+      $wordbankSuggestionArea.show();
     }
     $inputMessage.prop("disabled", !yourTurn);
     $inputSend.prop('disabled', !yourTurn);

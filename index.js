@@ -47,6 +47,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Chatroom
 let numUsers = 0;
 let users = [];
+let wordbank = [];
 
 let isDone = true;
 let selectedPrompt = '';
@@ -60,6 +61,7 @@ function getConnectedSockets() {
 const endGame = () => {
   numUsers = 0;
   users = [];
+  wordbank = [];
   isDone = true;
   selectedPrompt = '';
   response = '';
@@ -105,7 +107,7 @@ io.on('connection', (socket) => {
     } else {
       const fallback = 'uh';
       Algorithmia.client("sim5/+euZlm4p8fzBCnZcbEc9vh1")
-        .algo("PetiteProgrammer/AutoComplete/0.1.2?timeout=20") // timeout is optional
+        .algo("PetiteProgrammer/AutoComplete/0.1.2?timeout=8") // timeout is optional
         .pipe({ sentence: response })
         .then(aiResults => {
           if (isDone) {
@@ -140,6 +142,18 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('add suggestion', (word) => {
+    if (currentUser === socket.username) return;
+    word = word.replace(/\s/g, '');
+    if (wordbank.indexOf(word) === -1) {
+      wordbank.push(word);
+    }
+    io.emit('add suggestion', {
+      wordbank,
+      word,
+    });
+  });
+
   socket.on('end response', () => {
     if (currentUser !== socket.username) return;
     isDone = true;
@@ -171,6 +185,7 @@ io.on('connection', (socket) => {
       selectedPrompt,
       response,
       currentUser,
+      wordbank,
     });
 
     // echo globally (all clients) that a person has connected
