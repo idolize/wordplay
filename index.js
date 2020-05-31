@@ -4,38 +4,38 @@ const app = express();
 const path = require('path');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
-const Algorithmia = require("algorithmia");
+const Algorithmia = require('algorithmia');
 
 const port = process.env.PORT || 3000;
-
-console.log('hello');
 
 const prompts = [
   'What is the meaning of life?',
   'Where do babies come from?',
-  'What is God?',
-  'How do I get rich quick?',
+  'How will <name> get rich?',
   'What happens after you die?',
   'What do dogs think about?',
-  'How will I die?',
+  'How will <name> die?',
   'What\'s going to lead to the apocalpyse?',
   'How will our planet be saved?',
-  'How do you find true love?',
+  'How will <name> find true love?',
   'What will be the future of transportation?',
   'What will be the future of entertainment?',
   'What are aliens like?',
-  'How do I get the fountain of youth?',
-  'How do I live forever?',
-  'How can I become super strong?',
+  'How will <name> live forever?',
+  'How will <name> become super strong?',
   'What is the best way to raise your kids?',
-  'What will happen in my relationship?',
-  'How do I get even with my boss?',
-  'How do I become president?',
+  'What will happen in <name>\'s relationship?',
+  'How should <name> get even with their boss?',
+  'How will <name> become president?',
+  'What is <name>\'s deepest secret?',
+  'What is the hardest problem in the world?',
+  'What is <name>\'s best quality?',
+  '<name> should be extra careful with...',
+  '<name> always loves it when...',
+  '<name> has a huge collection of...',
+  'What did <name> find at the bottom of the rainbow?',
+  'I am reading <name>\'s mind right now, and they are thinking about...',
 ];
-
-const selectPrompt = () => {
-  return prompts[Math.floor(Math.random() * prompts.length)];
-}
 
 server.listen(port, () => {
   console.log('Server listening at port %d', port);
@@ -53,6 +53,12 @@ let isDone = true;
 let selectedPrompt = '';
 let response = '';
 let currentUser = undefined;
+
+const selectPrompt = () => {
+  const prompt = prompts[Math.floor(Math.random() * prompts.length)];
+  const randPlayer = users[Math.floor(Math.random() * numUsers)];
+  return prompt.replace(/<name>/g, randPlayer);
+}
 
 function getConnectedSockets() {
   return Object.values(io.of("/").connected);
@@ -215,7 +221,7 @@ io.on('connection', (socket) => {
       addedUser = false;
       var userIndex = users.indexOf(socket.username);
       users = users.filter(user => user !== socket.username);
-      --numUsers;
+      numUsers = numUsers < 1 ? 0 : (numUsers - 1);
       if (numUsers === 0) {
         // end game
         return endGame();
