@@ -131,6 +131,7 @@ ul {
 /* Messages */
 
 .messageArea {
+  background-color: lightblue;
   position: relative;
   padding: 35px;
   flex-basis: 60%;
@@ -200,13 +201,8 @@ ul {
 }
 
 .inputMessage *:disabled {
-  background-color: #ccc;
+  background-color: #ccc !important;
 }
-
-.inputMessage *:disabled {
-  background-color: #ccc;
-}
-
 
 .prompt {
   font-size: 30px;

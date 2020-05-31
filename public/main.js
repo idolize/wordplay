@@ -178,13 +178,10 @@ $(function () {
     $messages[0].scrollTop = options.prepend ? 0 : $messages[0].scrollHeight;
   }
 
-  const addToastElement = (title, message, delay = 2000) => {
-    $(`<div class="toast" data-delay="${delay}">
+  const addToastElement = (title, message, delay) => {
+    $(`<div class="toast">
         <div class="toast-header">
           <strong class="mr-auto">${title}</strong>
-          <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
         </div>
         <div class="toast-body">
           ${message}
@@ -192,6 +189,8 @@ $(function () {
       </div>
     `)
     .appendTo($toasts)
+    .toast({ delay: delay || 2000 })
+    .toast('show');
   }
 
   // Prevents input from having injected markup
@@ -202,7 +201,17 @@ $(function () {
   const constructWordbank = (wordbank) => {
     $wordbank.empty();
     wordbank.forEach(word => {
-      $('<span class="badge badge-secondary">').text(word).appendTo($wordbank);
+      $('<a href="#" class="badge badge-secondary">')
+        .text(word)
+        .click(() => {
+          var yourTurn = !isDone && currentUser === username;
+          if (yourTurn) {
+            $wordbankModal.modal('hide');
+            $inputMessage.val(word);
+            sendMessage();
+          }
+        })
+        .appendTo($wordbank);
     });
     if (wordbank.length === 0) {
       $('<span class="text-muted">').text('No suggestions yet').appendTo($wordbank);
@@ -262,8 +271,8 @@ $(function () {
           socket.emit('out of time');
           $timer.text('Out of time!');
           $inputMessage.prop('disabled', true);
-          $inputSend.prop('disabled', true);
-          $inputEnd.prop('disabled', true);
+          $inputSend.hide();
+          $inputEnd.hide();
         } else {
           console.log(`${turnTime}s left...`);
           tick();
@@ -387,8 +396,8 @@ $(function () {
     }
     $message.text(data.response);
     constructWordbank(data.wordbank);
-    $inputSend.prop('disabled', !yourTurn);
-    $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
+    $inputSend.toggle(yourTurn);
+    $inputEnd.toggle(yourTurn && $message.text().length);
     $inputMessage.prop("disabled", !yourTurn);
     $inputMessage.val('');
     enableTurnTimer(yourTurn);
@@ -422,8 +431,8 @@ $(function () {
       $wordbankSuggestionArea.show();
     }
     $inputMessage.val('');
-    $inputSend.prop('disabled', !yourTurn);
-    $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
+    $inputSend.toggle(yourTurn);
+    $inputEnd.toggle(yourTurn && $message.text().length);
     $inputMessage.prop("disabled", !yourTurn);
     enableTurnTimer(yourTurn);
   });
@@ -499,8 +508,8 @@ $(function () {
       $wordbankSuggestionArea.show();
     }
     $inputMessage.prop("disabled", !yourTurn);
-    $inputSend.prop('disabled', !yourTurn);
-    $inputEnd.prop("disabled", !yourTurn || !$message.text().length);
+    $inputSend.toggle(yourTurn);
+    $inputEnd.toggle(yourTurn && $message.text().length);
     enableTurnTimer(yourTurn);
   });
 
